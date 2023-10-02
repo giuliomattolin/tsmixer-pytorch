@@ -45,7 +45,7 @@ class ResBlock(nn.Module):
         return x + res
 
 
-### https://github.com/ts-kim/RevIN/blob/master/RevIN.py
+# https://github.com/ts-kim/RevIN/blob/master/RevIN.py
 class RevIN(nn.Module):
     def __init__(self, num_features: int, eps=1e-5, affine=True):
         """
@@ -60,12 +60,12 @@ class RevIN(nn.Module):
         if self.affine:
             self._init_params()
 
-    def forward(self, x, mode:str):
+    def forward(self, x, mode:str, target_slice=None):
         if mode == 'norm':
             self._get_statistics(x)
             x = self._normalize(x)
         elif mode == 'denorm':
-            x = self._denormalize(x)
+            x = self._denormalize(x, target_slice)
         else: raise NotImplementedError
         return x
 
@@ -87,10 +87,10 @@ class RevIN(nn.Module):
             x = x + self.affine_bias
         return x
 
-    def _denormalize(self, x):
+    def _denormalize(self, x, target_slice=None):
         if self.affine:
-            x = x - self.affine_bias
-            x = x / (self.affine_weight + self.eps*self.eps)
-        x = x * self.stdev
-        x = x + self.mean
+            x = x - self.affine_bias[target_slice]
+            x = x / (self.affine_weight + self.eps*self.eps)[target_slice]
+        x = x * self.stdev[:, :, target_slice]
+        x = x + self.mean[:, :, target_slice]
         return x

@@ -33,6 +33,6 @@ class TSMixerRevIN(nn.Module):
         x = self.linear(x)
         x = torch.transpose(x, 1, 2)
         
-        x = self.rev_norm(x, 'denorm') # ,target_slice
+        x = self.rev_norm(x, 'denorm', self.target_slice)
         
         return x
