@@ -57,6 +57,22 @@ def main(args):
 
     best_loss = torch.tensor(float('inf'))
 
+    # create checkpoint directory
+    save_directory = os.path.join(args.checkpoint_dir, args.name)
+
+    if os.path.exists(save_directory):
+        import glob
+        import re
+
+        path = Path(save_directory)
+        dirs = glob.glob(f"{path}*")  # similar paths
+        matches = [re.search(rf"%s(\d+)" % path.stem, d) for d in dirs]
+        i = [int(m.groups()[0]) for m in matches if m]  # indices
+        n = max(i) + 1 if i else 2  # increment number
+        save_directory = f"{path}{n}"  # update path
+
+    os.makedirs(save_directory)
+
     # start training
     for epoch in range(args.train_epochs):
     
@@ -112,6 +128,8 @@ def main(args):
             if val_mloss < best_loss:
                 best_loss = val_mloss
                 best_model = deepcopy(model.state_dict())
+
+                torch.save(best_model, os.path.join(save_directory, "best.pt"))
                 
                 patience = 0
             else:
@@ -178,13 +196,14 @@ def parse_args():
     parser.add_argument(
         '--checkpoint_dir',
         type=str,
-        default='./checkpoints/',
+        default=ROOT / 'checkpoints',
         help='location of model checkpoints',
     )
     parser.add_argument(
-        '--delete_checkpoint',
-        action='store_true',
-        help='delete checkpoints after the experiment',
+        '--name',
+        type=str,
+        default='exp',
+        help='save best model to checkpoints/name',
     )
 
     # forecasting task
