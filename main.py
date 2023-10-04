@@ -78,7 +78,7 @@ def main(args):
     
         model.train()
         
-        train_mloss = torch.zeros(1)
+        train_mloss = torch.zeros(1, device=device)
         
         print(('\n' + '%-10s' * 2) % ('Epoch', 'Train loss'))
         pbar = tqdm(enumerate(train_data), total=len(train_data))
@@ -105,7 +105,7 @@ def main(args):
 
         model.eval()
         
-        val_mloss = torch.zeros(1)
+        val_mloss = torch.zeros(1, device=device)
         
         print(('%-10s' * 2) % ('', 'Val loss'))
         pbar = tqdm(enumerate(val_data), total=len(val_data))
@@ -147,14 +147,14 @@ def main(args):
     # start testing
     model.eval()
     
-    test_mloss = torch.zeros(1)
+    test_mloss = torch.zeros(1, device=device)
 
     print(('\n' + '%-10s' * 1) % ('Test loss'))
-    pbar = tqdm(enumerate(val_data), total=len(val_data))
+    pbar = tqdm(enumerate(test_data), total=len(test_data))
 
     with torch.no_grad():
 
-        for i, (batch_x, batch_y) in enumerate(tqdm(test_data)):
+        for i, (batch_x, batch_y) in pbar:
 
             batch_x, batch_y = batch_x.to(device), batch_y.to(device)
             outputs = model(batch_x)
